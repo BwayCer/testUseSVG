@@ -1,0 +1,176 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>測試 SVG 效果</title>
+</head><body>
+
+
+
+<style>
+body {
+    background: #a3d5d3;
+}
+@media (orientation: portrait) {
+    body {
+      font-size: 5vw;
+    }
+}
+@media (orientation: landscape) {
+    body {
+      font-size: 5vh;
+    }
+}
+#LxSVGBox {
+    width: 11em;
+    height: 11em;
+    margin: -5.5em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+.TxSVGFull {
+    width: 100%;
+    height: 100%;
+    x: 0;
+    y: 0;
+    position:absolute;
+    top:0;
+    left:0;
+}
+.TxSVG_circleBorder {
+    cx: 5.5em;
+    cy: 5.5em;
+    r: 5em;
+    fill: none;
+    stroke: rgba(255,100,120,0.2);
+    stroke-linecap: round;
+    stroke-width: 0;
+    stroke-dasharray: 23.56194em, 31.41592em;
+    stroke-dashoffset: 23.56194em;
+    transform: rotate(135deg);
+    transform-origin: 5.5em 5.5em;
+}
+.TxSVG_circle {
+    cx: 5.5em;
+    cy: 5.5em;
+    r: 5em;
+    fill: none;
+    stroke: #f99;
+    stroke-linecap: round;
+    stroke-width: 0;
+    stroke-dasharray: 23.56194em, 31.41592em;
+    stroke-dashoffset: 23.56194em;
+    transform: rotate(135deg);
+    transform-origin: 5.5em 5.5em;
+}
+#LxLog {
+    font-size: 16px;
+}
+</style>
+
+
+
+<div id="LxSVGBox">
+    <svg class="TxSVGFull">
+        <circle class="TxSVG_circleBorder"></circle>
+        <circle class="TxSVG_circle"></circle>
+    </svg>
+</div>
+
+
+
+<div id="LxLog">
+</div>
+
+
+
+<script src="../lib/naviVerify.js"></script>
+<script src="../lib/jzTree_additional.js"></script>
+<script src="../lib/onMultiMouse.js"></script>
+<script>
+
+    onMultiMouse();
+
+    var HElem_SVG_circleBorder = document.querySelector('.TxSVG_circleBorder'),
+        HElem_SVG_circle = document.querySelector('.TxSVG_circle'),
+        jLength_circle = 23.56194,
+        jPreLength = 23.56194,
+        jNowLength,
+        jPlace_pre = null,
+        jSetTimeoutID;
+
+    document.addEventListener( 'multimouse', function( evt ){
+        switch( evt.detail.state ){
+            case 'start':
+                clearTimeout( jSetTimeoutID );
+                jPlace_pre = { x: evt.pageX, y: evt.pageY };
+                jInterlude('start');
+                return;
+            case 'move':
+                jNowLength = jCount_length({ x: evt.pageX, y: evt.pageY });
+                break;
+            case 'end':
+                clearTimeout( jSetTimeoutID );
+                jInterlude('end');
+                jPreLength = jCount_length({ x: evt.pageX, y: evt.pageY });
+                jPlace_pre = null;
+                return;
+        }
+
+        console.log( jNowLength );
+        HElem_SVG_circle.style.strokeDashoffset = jNowLength + 'em';
+        evt.preventDefault();
+    }, false );
+
+    var jInterlude_styleList = [ 'strokeWidth', 'strokeDashoffset' ];
+    function jInterlude( jState ){
+        HElem_SVG_circleBorder.style.transition
+            = HElem_SVG_circle.style.transition
+            = 'stroke-width, stroke-dashoffset, 250ms ease-in-out';
+
+        jSetTimeoutID = setTimeout( function(){
+            HElem_SVG_circleBorder.style.transition
+                = HElem_SVG_circle.style.transition
+                = null;
+
+            if( jState === 'end' )
+                HElem_SVG_circleBorder.style.strokeDashoffset
+                    = HElem_SVG_circle.style.strokeDashoffset
+                    = '23.56194em';
+        }, 300 );
+
+        var jValList_circleBorder,
+            jValList_circle;
+        switch( jState ){
+            case 'start':
+                jValList_circleBorder = [ '1em', '0' ];
+                jValList_circle = [ '0.2em', jPreLength + 'em' ];
+                break;
+            case 'end':
+                jValList_circleBorder = jValList_circle = [ '0em', null ];
+                break;
+        }
+
+        for(var p = 0, len = jInterlude_styleList.length; p < len ; p++){
+            if( jValList_circleBorder[ p ] ) HElem_SVG_circleBorder.style[ jInterlude_styleList[ p ] ] = jValList_circleBorder[ p ];
+            if( jValList_circle[ p ] ) HElem_SVG_circle.style[ jInterlude_styleList[ p ] ] = jValList_circle[ p ];
+        }
+    }
+
+    function jCount_length( jPlace_now ){
+        var jPlaceY =  -0.025 * ( jPlace_now.y - jPlace_pre.y ),
+            jLength = jPreLength - jPlaceY;
+
+        console.log( jLength < 0, jLength > jLength_circle );
+        if( jLength < 0 ){
+            jPlace_pre = jPlace_now;
+            jLength = jPreLength = 0;
+        }else if( jLength > jLength_circle ){
+            jPlace_pre = jPlace_now;
+            jLength = jPreLength = jLength_circle;
+        }
+        return jLength;
+    }
+</script>
+
+
+
+</body></html>
